@@ -1566,6 +1566,7 @@ $.richFilemanagerPlugin = function(element, pluginOptions)
                 }
             };
 
+            // marti
             this.openNode = function(node, populateItems, e) {
                 if(node.rdo.type === 'file') {
                     getDetailView(node.rdo);
@@ -3664,8 +3665,10 @@ $.richFilemanagerPlugin = function(element, pluginOptions)
 
 	// Build url to display image or its thumbnail
     var createImageUrl = function (resourceObject, thumbnail, disableCache) {
+        const exts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'tiff', 
+                        'ogv', 'avi', 'mkv', 'mp4', 'webm', 'm4v', 'ogg', 'mp3', 'wav']
         var imageUrl;
-        if (isImageFile(resourceObject.id) &&
+        if (exts.includes(getExtension(resourceObject.id)) &&
             resourceObject.attributes.readable && (
 			(thumbnail && config.viewer.image.showThumbs) ||
 			(!thumbnail && config.viewer.image.enabled === true)
