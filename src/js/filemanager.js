@@ -476,7 +476,38 @@ $.richFilemanagerPlugin = function(element, pluginOptions)
         }
 
         // get folder that should be expanded after filemanager is loaded
-        var expandedFolder = _url_.param('expandedFolder');
+        window.addEventListener('hashchange', () => {
+            if(hashChangedInternally) {
+                console.log('hash changed internal ', window.location.href)
+                hashChangedInternally = false
+                return
+            }
+            console.log('hash changed by user ', window.location.href)
+            var expandedFolder = decodeURIComponent(window.location.hash.slice(1));
+            if(expandedFolder) {
+                fullexpandedFolder = fileRoot + expandedFolder + '/';
+                fullexpandedFolder = normalizePath(fullexpandedFolder);
+
+                const tree_model = fmModel.treeModel
+                const parentNode = fmModel.treeModel.rootNode
+                var node = tree_model.findByFilter(function (node) {
+                    return (fullexpandedFolder.indexOf(node.id) === 0);
+                }, parentNode);
+
+                if (node) {
+                    config.filetree.expandSpeed = 10;
+                    tree_model.loadDataNode(node, false, true);
+                } else {
+                    fullexpandedFolder = null;
+                    config.filetree.expandSpeed = 200;
+                    tree_model.setItemsFromNode(parentNode);
+                }
+
+            }
+
+            
+        });
+        var expandedFolder = decodeURIComponent(_url_.fsegment());
         if(expandedFolder) {
             fullexpandedFolder = fileRoot + expandedFolder + '/';
             fullexpandedFolder = normalizePath(fullexpandedFolder);
@@ -1234,7 +1265,7 @@ $.richFilemanagerPlugin = function(element, pluginOptions)
 					// looking for node that starts with specified path
 					var node = tree_model.findByFilter(function (node) {
 						return (fullexpandedFolder.indexOf(node.id) === 0);
-					}, parentNode);
+                    }, parentNode);
 
 					if (node) {
                         config.filetree.expandSpeed = 10;
@@ -1566,7 +1597,6 @@ $.richFilemanagerPlugin = function(element, pluginOptions)
                 }
             };
 
-            // marti
             this.openNode = function(node, populateItems, e) {
                 if(node.rdo.type === 'file') {
                     getDetailView(node.rdo);
@@ -2557,6 +2587,17 @@ $.richFilemanagerPlugin = function(element, pluginOptions)
             };
 
             this.splitPath = function(targetPath) {
+                // try {
+                //     throw new Error();
+                // } catch(e) {
+                //     window.console.log('x', targetPath, 'x', e.stack);
+                // }
+                const newHash = `#${encodeURIComponent(targetPath)}`;
+                if (window.location.hash !== newHash) {
+                    console.log(`changin hash from ${window.location.hash} to ${newHash}`)
+                    window.location.hash = newHash;
+                    hashChangedInternally = true;
+                }
                 var	path = fileRoot,
                     chunks = targetPath.replace(new RegExp('^' + fileRoot), '').split('/');
 
